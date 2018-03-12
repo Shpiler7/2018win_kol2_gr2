@@ -21,3 +21,61 @@
 #
 #Your program must be runnable with command "python task.py".
 #Show some usecases of your library in the code (print some things)
+
+
+class  student(object):
+
+	L = []
+
+	def __init__(self, name, surname):
+		self.name = name
+		self.surname = surname
+
+	def __str__(self):
+		return self.name + " " + self.surname
+
+	def averageScore(self):
+		number = len(self.L)
+		if number == 0:
+			return "No scores"
+		else:
+			return sum(self.L)/number
+
+	def addScore(self, score):
+		self.L.append(score)
+
+
+if __name__ == "__main__":
+	studentsList = []
+	while True:
+		print("1 - Add student")
+		print("2 - show all students")
+		print("3 - add student score")
+		print("4 - show student avg score")
+		print("q - exit")
+		num = input()
+		if num == "1":
+			print("Name: ")
+			name = input()
+			print("Surname: ")
+			surname = input()
+			studentsList.append(student(name, surname))
+		elif num == "2":
+			for i in studentsList:
+				print(i)
+		elif num == "3":
+			l = len(studentsList)
+			print("Choose student number: ")
+			studnum = input()
+			print("Type score: ")
+			score = input()
+			studentsList[int(studnum)].addScore(int(score))
+		elif num == "4":
+			l = len(studentsList)
+			print("Choose student number: ")
+			studnum = input()
+			print(studentsList[int(studnum)].averageScore())
+		elif num == "q":
+			break
+		else:
+			print("Error")
