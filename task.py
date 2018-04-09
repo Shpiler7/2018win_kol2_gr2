@@ -34,16 +34,22 @@ def showAllStudents(school):
 		if "classes" in student:
 			print("\n\tClasses")
 			for classes in student["classes"]:
-				stud_score.extend(classes["score"])
-				stud_attendance.extend(classes["attendance"])
-				all_attendance = all_attendance + len(classes["attendance"])
+				if "score" in classes:
+					stud_score.extend(classes["score"])
+				if "attendance" in classes:
+					stud_attendance.extend(classes["attendance"])
+					all_attendance = all_attendance + len(classes["attendance"])
 				print("\t {}. {}" .format(classes["classes_id"], classes["classes_name"]))
-				print("\t\t Scores: {}".format(classes["score"]))
-				print("\t\t Average score: {:.2f}".format(np.mean(classes["score"])))
-				print("\t\t Attendance: {}".format(classes["attendance"]))
-				print("\t\t Total attendance: {}/{} {:.2f}%".format(sum(classes["attendance"]), len(classes["attendance"]), sum(classes["attendance"])/len(classes["attendance"])*100))
-			print("\n\tAverage score: {:.2f}".format(np.mean(stud_score)))
-			print("\tTotal attendance {}/{} {:.2f}%".format(sum(stud_attendance), all_attendance, sum(stud_attendance)/all_attendance*100))
+				if "score" in classes:
+					print("\t\t Scores: {}".format(classes["score"]))
+					print("\t\t Average score: {:.2f}".format(np.mean(classes["score"])))
+				if "attendance" in classes:
+					print("\t\t Attendance: {}".format(classes["attendance"]))
+					print("\t\t Total attendance: {}/{} {:.2f}%".format(sum(classes["attendance"]), len(classes["attendance"]), sum(classes["attendance"])/len(classes["attendance"])*100))
+			if "score" in classes:	
+				print("\n\tAverage score: {:.2f}".format(np.mean(stud_score)))
+			if "attendance" in classes:
+				print("\tTotal attendance {}/{} {:.2f}%\n".format(sum(stud_attendance), all_attendance, sum(stud_attendance)/all_attendance*100))
 				
 def addScore(school, stud_id, classes_id, score):
 	for student in school["student"]:
@@ -51,6 +57,8 @@ def addScore(school, stud_id, classes_id, score):
 			if "classes" in student:
 				for classes in student["classes"]:
 					if classes["classes_id"] == int(classes_id):
+						if "score" not in classes:
+							classes["score"] = []
 						classes["score"].append(int(score))
 						with open("school.json", mode='w') as f:
 							json.dump(school, f)
@@ -63,6 +71,8 @@ def addAttendance(school, stud_id, classes_id, attendance):
 			if "classes" in student:
 				for classes in student["classes"]:
 					if classes["classes_id"] == int(classes_id):
+						if "attendance" not in classes:
+							classes["attendance"] = []
 						classes["attendance"].append(int(attendance))
 						with open("school.json", mode='w') as f:
 							json.dump(school, f)
@@ -72,8 +82,10 @@ def addAttendance(school, stud_id, classes_id, attendance):
 def addClass(school, stud_id, classes_name):
 	for student in school["student"]:
 		if student["id"] == int(stud_id):
+			if "classes" not in student:
+				student["classes"] = []
 			if "classes" in student:
-				classes.append({"classes_id": len(classes) + 1, "classes_name": classes_name, "score": [], "attendance": []})
+				student["classes"].append({"classes_id": len(student["classes"])+1, "classes_name": classes_name})
 				with open("school.json", mode='w') as f:
 					json.dump(school, f)
 				return "Classes added!"
@@ -97,8 +109,8 @@ if __name__ == "__main__":
 		print("1 - Add student")
 		print("2 - Show all students and their score")
 		print("3 - Add student score")
-		#print("4 - Add attendance (not implemented)")
-		#print("5 - Add class to a student (not implemented)")
+		print("4 - Add attendance")
+		print("5 - Add class to a student")
 		print("q - Exit")
 		print("*************************************\n")
 		num = input()
@@ -119,9 +131,29 @@ if __name__ == "__main__":
 			stud_id = input()
 			print("Choose classes by id")
 			classes_id = input()
-			print("Type score")
+			print("Type score (1 to 5)")
 			score = input()
-			print(addScore(school, stud_id, classes_id, score))
+			if (int(score) >= 1 and int(score) <= 5):
+				print(addScore(school, stud_id, classes_id, score))
+			else:
+				print("Wrong input! Type 1 to 5.")
+		elif num == "4":
+			print("Choose student by id")
+			stud_id = input()
+			print("Choose classes by id")
+			classes_id = input()
+			print("Type attendance (0 or 1)")
+			attendance = input()
+			if (int(attendance) == 0 or int(attendance) == 1):
+				print(addAttendance(school, stud_id, classes_id, attendance))
+			else:
+				print("Wrong input! Type 0 or 1.")
+		elif num == "5":
+			print("Choose student by id")
+			stud_id = input()
+			print("Type classes name")
+			classes_name = input()
+			print(addClass(school, stud_id, classes_name))
 		elif num == "q":
 			break
 		else:
