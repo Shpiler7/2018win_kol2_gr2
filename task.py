@@ -1,10 +1,10 @@
-# Class diary  
+# class diary  
 #
 # Create program for handling lesson scores.
-# Use python to handle student (highscool) class scores, and attendance.
+# Use python to handle student (highscool) classes scores, and attendance.
 # Make it possible to:
 # - Get students total average score (average across classes)
-# - get students average score in class
+# - get students average score in classes
 # - hold students name and surname
 # - Count total attendance of student
 # The default interface for interaction should be python interpreter.
@@ -22,59 +22,106 @@
 #Your program must be runnable with command "python task.py".
 #Show some usecases of your library in the code (print some things)
 
+import json
+import numpy as np
 
-class  student(object):
-
-	L = []
-
-	def __init__(self, name, surname):
-		self.name = name
-		self.surname = surname
-
-	def __str__(self):
-		return self.name + " " + self.surname
-
-	def averageScore(self):
-		number = len(self.L)
-		if number == 0:
-			return "No scores"
-		else:
-			return sum(self.L)/number
-
-	def addScore(self, score):
-		self.L.append(score)
-
+def showAllStudents(school):
+	for student in school["student"]:
+		stud_score = []
+		stud_attendance = []
+		all_attendance = 0
+		print("{}. {} {}" . format(student["id"], student["name"], student["surname"]))
+		if "classes" in student:
+			print("\n\tClasses")
+			for classes in student["classes"]:
+				stud_score.extend(classes["score"])
+				stud_attendance.extend(classes["attendance"])
+				all_attendance = all_attendance + len(classes["attendance"])
+				print("\t {}. {}" .format(classes["classes_id"], classes["classes_name"]))
+				print("\t\t Scores: {}".format(classes["score"]))
+				print("\t\t Average score: {:.2f}".format(np.mean(classes["score"])))
+				print("\t\t Attendance: {}".format(classes["attendance"]))
+				print("\t\t Total attendance: {}/{} {:.2f}%".format(sum(classes["attendance"]), len(classes["attendance"]), sum(classes["attendance"])/len(classes["attendance"])*100))
+			print("\n\tAverage score: {:.2f}".format(np.mean(stud_score)))
+			print("\tTotal attendance {}/{} {:.2f}%".format(sum(stud_attendance), all_attendance, sum(stud_attendance)/all_attendance*100))
+				
+def addScore(school, stud_id, classes_id, score):
+	for student in school["student"]:
+		if student["id"] == int(stud_id):
+			if "classes" in student:
+				for classes in student["classes"]:
+					if classes["classes_id"] == int(classes_id):
+						classes["score"].append(int(score))
+						with open("school.json", mode='w') as f:
+							json.dump(school, f)
+						return "Score added!"
+	return "No such student or classes"
+	
+def addAttendance(school, stud_id, classes_id, attendance):
+	for student in school["student"]:
+		if student["id"] == int(stud_id):
+			if "classes" in student:
+				for classes in student["classes"]:
+					if classes["classes_id"] == int(classes_id):
+						classes["attendance"].append(int(attendance))
+						with open("school.json", mode='w') as f:
+							json.dump(school, f)
+						return "Attendance added!"
+	return "No such student or classes"
+	
+def addClass(school, stud_id, classes_name):
+	for student in school["student"]:
+		if student["id"] == int(stud_id):
+			if "classes" in student:
+				classes.append({"classes_id": len(classes) + 1, "classes_name": classes_name, "score": [], "attendance": []})
+				with open("school.json", mode='w') as f:
+					json.dump(school, f)
+				return "Classes added!"
+	return "No such student or classes"
+	
+def overallAverage(school):
+	overallScore = []
+	for student in school["student"]:
+		if "classes" in student:
+			for classes in student["classes"]:
+				if "score" in classes:
+					overallScore.extend(classes["score"])
+	print("Overall average of all Students: {:.2f}".format(np.mean(overallScore)))
+	
+			
 
 if __name__ == "__main__":
-	studentsList = []
+	school = json.load(open("school.json"))
 	while True:
+		print("\n*************************************")
 		print("1 - Add student")
-		print("2 - show all students")
-		print("3 - add student score")
-		print("4 - show student avg score")
-		print("q - exit")
+		print("2 - Show all students and their score")
+		print("3 - Add student score")
+		#print("4 - Add attendance (not implemented)")
+		#print("5 - Add class to a student (not implemented)")
+		print("q - Exit")
+		print("*************************************\n")
 		num = input()
 		if num == "1":
 			print("Name: ")
 			name = input()
 			print("Surname: ")
 			surname = input()
-			studentsList.append(student(name, surname))
+			school["student"].append({"id": len(school["student"]) + 1, "name": name, "surname": surname})
+			with open("school.json", mode='w') as f:
+				json.dump(school, f)
 		elif num == "2":
-			for i in studentsList:
-				print(i)
+			showAllStudents(school)
+			print("\n")
+			overallAverage(school)
 		elif num == "3":
-			l = len(studentsList)
-			print("Choose student number: ")
-			studnum = input()
-			print("Type score: ")
+			print("Choose student by id")
+			stud_id = input()
+			print("Choose classes by id")
+			classes_id = input()
+			print("Type score")
 			score = input()
-			studentsList[int(studnum)].addScore(int(score))
-		elif num == "4":
-			l = len(studentsList)
-			print("Choose student number: ")
-			studnum = input()
-			print(studentsList[int(studnum)].averageScore())
+			print(addScore(school, stud_id, classes_id, score))
 		elif num == "q":
 			break
 		else:
